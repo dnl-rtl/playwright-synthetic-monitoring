@@ -145,7 +145,9 @@ async function test() {
                 // TODO: listen to events
                 console.log("Report copied to 'last-error' directory");
 
-                if (env.PERSIST_TRACE) {
+                if (env.PERSIST_TRACE_DIRECTORY) {
+
+                    // Get dynamic path
                     let files = [];
                     const resultsPath = "test-results"
                     try {
@@ -155,11 +157,20 @@ async function test() {
                         throw err;
                     }
 
+                    // Create dir, if not exists.
+                    try {
+                        fs.mkdirSync(env.PERSIST_TRACE_DIRECTORY);
+                    } catch (error: any) {
+                        if(error["code"].includes("EXIST")) console.log("Persistence trace dir already exists.")
+                    }
+
+                    // Get source dir
                     const _file = files.filter(file => !file.startsWith("."))[0];
 
                     const source = `test-results/${_file}/trace.zip`;
-                    const destination = `persistence/${formatDate(new Date())}.zip`;
+                    const destination = `${env.PERSIST_TRACE_DIRECTORY}/${new Date().toISOString()}.zip`;
 
+                    // Copy trace
                     fs.copyFile(source, destination, fs.constants.COPYFILE_FICLONE, (error) => {
                         if (error) console.error(error);
                         else console.info(`Trace copied to:  ` + destination);
@@ -173,16 +184,4 @@ async function test() {
         }
         childProcess = undefined;
     });
-}
-
-
-function formatDate(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-
-    return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
 }
