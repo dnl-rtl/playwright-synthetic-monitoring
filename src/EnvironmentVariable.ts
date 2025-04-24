@@ -26,7 +26,7 @@ export function toNumber(value: string | undefined, defaultValue: number): numbe
 
 const EnvironmentVariables = z.object({
     MONITORING_INTERVAL: z.string().optional().transform((val) => toNumber(val, 300)),
-    PERSIST_TRACE: z.string().optional().transform((val) => toBool(val as BoolAsString, false))
+    PERSIST_TRACE_DIRECTORY: z.string().optional()
 });
 
 export const env = EnvironmentVariables.parse(process.env);
