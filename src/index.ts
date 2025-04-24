@@ -146,7 +146,18 @@ async function test() {
                 console.log("Report copied to 'last-error' directory");
 
                 if (env.PERSIST_TRACE) {
-                    const source = "test-results/login_monitor-Synthetic-monitoring-Test-chromium-retry1/trace.zip"
+                    let files = [];
+                    const resultsPath = "test-results"
+                    try {
+                        files = fs.readdirSync(resultsPath);
+                    } catch (err) {
+                        console.error(`Error reading directory: ${resultsPath}`, err);
+                        throw err;
+                    }
+
+                    const _file = files.filter(file => !file.startsWith("."))[0];
+
+                    const source = `test-results/${_file}/trace.zip`;
                     const destination = `persistence/${formatDate(new Date())}.zip`;
 
                     fs.copyFile(source, destination, fs.constants.COPYFILE_FICLONE, (error) => {
