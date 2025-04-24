@@ -1,15 +1,16 @@
 import express from "express";
-import {ChildProcess, exec} from "node:child_process";
+import * as fs from "fs";
+import { ChildProcess, exec } from "node:child_process";
+import { statSync } from "node:fs";
 import copy from "recursive-copy";
-import {statSync} from "node:fs";
-import {env} from "./EnvironmentVariable";
+import { env } from "./EnvironmentVariable";
 
 // Let's start an express server.
 // This server will respond on the /healthcheck and the /metrics route with the status of the last page loading of Pupetteer
 
 const app = express();
 
-let status: "not-run"|"ok"|"ko" = "not-run";
+let status: "not-run" | "ok" | "ko" = "not-run";
 let testDuration = 0;
 
 app.get('/healthcheck', async (req, res) => {
@@ -114,7 +115,7 @@ app.listen(3000, () => {
     console.log('Server listening on port 3000');
 });
 
-let childProcess: ChildProcess|undefined = undefined;
+let childProcess: ChildProcess | undefined = undefined;
 
 test().catch(e => console.error(e));
 setInterval(() => {
@@ -140,13 +141,37 @@ async function test() {
             console.error("Error code received: " + error.code);
             status = 'ko';
             // Let's copy the content of the playwright-report in the "last-error" directory.
-            copy('playwright-report', 'last-error', {overwrite: true, dot: true}).then((result) => {
+            copy('playwright-report', 'last-error', { overwrite: true, dot: true }).then((result) => {
                 // TODO: listen to events
                 console.log("Report copied to 'last-error' directory");
+
+                if (env.PERSIST_TRACE) {
+                    const source = "test-results/login_monitor-Synthetic-monitoring-Test-chromium-retry1/trace.zip"
+                    const destination = `persistence/${formatDate(new Date())}.zip`;
+
+                    fs.copyFile(source, destination, fs.constants.COPYFILE_FICLONE, (error) => {
+                        if (error) console.error(error);
+                        else console.info(`Trace copied to:  ` + destination);
+                    });
+                }
             });
+
+
         } else {
             status = 'ok';
         }
         childProcess = undefined;
     });
+}
+
+
+function formatDate(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
 }
