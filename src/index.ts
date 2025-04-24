@@ -161,7 +161,8 @@ async function test() {
                     try {
                         fs.mkdirSync(env.PERSIST_TRACE_DIRECTORY);
                     } catch (error: any) {
-                        if(error["code"].includes("EXIST")) console.log("Persistence trace dir already exists.")
+                        if (error["code"].includes("EXIST")) console.log("Persistence trace dir already exists.");
+                        else throw error;
                     }
 
                     // Get source dir
