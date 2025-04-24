@@ -175,6 +175,12 @@ the `MONITORING_INTERVAL`, it will be killed and considered as failed.
 
 You can configure the base URL of the tests with the `BASE_URL` environment variable.
 
+## Configuring persistance trace directory
+You can configure a directory to persist the traces of failed tests. `PERSIST_TRACE_DIRECTORY` defaults to `undefined` and no directory will be created. If set to `PERSIST_TRACE_DIRECTORY=coolDir` the directory `coolDir` will be created and traces will be copied.
+
+> Traces will have a `DateTime` as filename.
+> Example: `2025-04-24T14:57:49.662Z.zip`
+
 ## Prometheus endpoint
 
 The Prometheus `/metrics` endpoint returns 2 metrics:
